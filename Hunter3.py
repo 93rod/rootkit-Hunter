@@ -30,7 +30,7 @@ def insert_file(c, path, hashs):
 
 def enu_rep(rep):
     """Parcourt récursivement un répertoire et calcule les hashs des fichiers"""
-    conn = sqlite3.connect('/home/uzi/Programmation/python/Rootkit Hunter/Rootkit Hunter 3/hashes.db')
+    conn = sqlite3.connect('hashes.db')
     c = conn.cursor()
 
     f_hash = []
@@ -50,10 +50,10 @@ def enu_rep(rep):
 
 def comp_hashes(rep):
     """Compare les hashs stockés dans la base de données avec les hashs du répertoire"""
-    conn = sqlite3.connect('/home/uzi/Programmation/python/Rootkit Hunter/Rootkit Hunter 3/hashes.db')
+    conn = sqlite3.connect('hashes.db')
     c = conn.cursor()
 
-    c.execute("SELECT path, hashs FROM fichiers")
+    c.execute("SELECT path, hash FROM fichiers")
     fichiers_db = c.fetchall()
 
     f_modifié = []
@@ -103,7 +103,7 @@ def scanner_ports():
 
 def comp_hashes_virustotal(api_key):
     """Compare les hachages stockés dans la base de données avec les hachages sur VirusTotal"""
-    conn = sqlite3.connect('/home/uzi/Programmation/python/Rootkit Hunter/Rootkit Hunter 3/hashes.db')
+    conn = sqlite3.connect('hashes.db')
     c = conn.cursor()
 
     c.execute("SELECT path, hash FROM fichiers")
@@ -138,28 +138,29 @@ def afficher_resultats(titre, liste):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Script de scan de fichiers et de ports')
-    parser.add_argument('-r', '--repertoire', help='Répertoire à scanner')
-    parser.add_argument('-f', '--fichier', help='Fichier à scanner')
-    parser.add_argument('-s', '--scanports', action='store_true', help='Effectuer un scan des ports')
+    parser = argparse.ArgumentParser(description='Rootkit Hunter 3')
+    parser.add_argument('-r', '--repertoire', help='Analyse les fichiers dans le répertoire spécifié')
+    parser.add_argument('-f', '--fichier', help='Analyse le fichier spécifié')
+    parser.add_argument('-s', '--scanports', action='store_true', help='Effectue un scan des ports')
     args = parser.parse_args()
 
     if args.repertoire:
         repertoire = args.repertoire
-        fichiers_hash = enu_rep(repertoire)
+        fichiers_hashes = enu_rep(repertoire)
+        afficher_resultats('Fichiers analysés', fichiers_hashes)
         fichiers_modifies, fichiers_supprimes = comp_hashes(repertoire)
         afficher_resultats('Fichiers modifiés', fichiers_modifies)
         afficher_resultats('Fichiers supprimés', fichiers_supprimes)
-    elif args.fichier:
+        fichiers_suspects = comp_hashes_virustotal(api_key)
+        afficher_resultats('Fichiers suspects (VirusTotal)', fichiers_suspects)
+
+    if args.fichier:
         fichier = args.fichier
         hash_fichier = cal_hash(fichier)
-        insert_file(hash_fichier)
-        fichiers_suspects = comp_hashes_virustotal(api_key)
-        afficher_resultats('Fichiers suspects', fichiers_suspects)
-    elif args.scanports:
+        print(f"Hash du fichier {fichier}: {hash_fichier}")
+
+    if args.scanports:
         scanner_ports()
-    else:
-        parser.print_help()
 
 
 if __name__ == '__main__':
