@@ -1,11 +1,10 @@
 Rootkit Hunter (RKH) est un outil puissant conçu pour renforcer la sécurité de votre système en détectant et en supprimant les rootkits, ainsi que d'autres menaces de sécurité. Il offre plusieurs fonctionnalités pour analyser les ports, les fichiers importants spécifiés dans le fichier de configuration, et comparer les empreintes de fichiers à la base de données VirusTotal. Ce fichier README donne un aperçu de RKH et de ses fonctionnalités.
 
 # Installation
-Clonez le dépôt RKH depuis GitHub : git clone https://github.com/votre_nom_utilisateur/rootkit-hunter.git
+Clonez le dépôt RKH depuis GitHub : git clone [https://github.com/votre_nom_utilisateur/rootkit-hunter.git](https://github.com/93rod/rootkit-Hunter)
 Accédez au répertoire RKH : cd rootkit-hunter
-Installez les dépendances requises : pip install -r requirements.txt
-Exécutez le script de configuration pour configurer RKH : python setup.py install
-Utilisation
+
+# Utilisation
 RKH propose plusieurs options en ligne de commande pour effectuer différentes vérifications de sécurité :
 
 ## Analyse des ports
@@ -35,13 +34,13 @@ RKH utilise un fichier de configuration (rkh.conf) pour spécifier divers param�
 Contributions
 Nous encourageons les contributions pour améliorer la fonctionnalité et la sécurité de RKH. Si vous rencontrez des problèmes ou avez des suggestions d'améliorations, veuillez les soumettre via le dépôt GitHub.
 
-Licence
+# Licence
 RKH est publié sous la licence MIT. Veuillez consulter le fichier LICENSE pour plus de détails.
 
-Avertissement
+# Avertissement
 RKH est un outil puissant pour renforcer la sécurité de votre système. Cependant, il doit être utilisé de manière responsable et en conformité avec les lois et réglementations applicables. Les développeurs de RKH ne sont pas responsables de toute mauvaise utilisation ou dommage causé par l'outil.
 
-Remarque : N'oubliez pas de mettre régulièrement à jour RKH et de maintenir votre système à jour avec les correctifs de sécurité pour assurer une protection optimale contre les menaces en constante évolution.
+## Remarque : N'oubliez pas de mettre régulièrement à jour RKH et de maintenir votre système à jour avec les correctifs de sécurité pour assurer une protection optimale contre les menaces en constante évolution.
 
 Pour plus d'informations, veuillez vous référer à la documentation complète disponible dans le dépôt.
 
