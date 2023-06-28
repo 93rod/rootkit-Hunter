@@ -6,7 +6,7 @@ import socket
 import requests
 
 
-def calculer_hash(fichier):
+def cal_hash(fichier):
     """Calcule le hash MD5 d'un fichier"""
     if not os.path.exists(fichier):
         return None
@@ -19,102 +19,98 @@ def calculer_hash(fichier):
 
 
 
-def enregistrer_fichier(c, chemin, hash_fichier):
+def save_db(c, path, hash_file):
     """Enregistre un fichier et son hash dans la base de données"""
     date_fichier = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     c.execute("INSERT INTO fichiers VALUES (?, ?, ?)",
-              (chemin, hash_fichier, date_fichier))
+              (path, hash_file, date_fichier))
 
 
-def parcourir_repertoire(repertoire):
+def frepo_hash(repo):
     """Parcourt récursivement un répertoire et calcule les hashs des fichiers"""
-    conn = sqlite3.connect('/home/uzi/Programmation/python/Rootkit Hunter/Rootkit Hunter 3/hashes.db')
+    conn = sqlite3.connect('~/Rootkit Hunter/Hunter.db')
     c = conn.cursor()
 
-    fichiers_hashes = []
-    for dossier, sous_repertoires, fichiers in os.walk(repertoire):
+    files_hash = []
+    for dossier, sous_repos, fichiers in os.walk(repo):
         for fichier in fichiers:
-            chemin_absolu = os.path.join(dossier, fichier)
-            hash_fichier = calculer_hash(chemin_absolu)
-            enregistrer_fichier(c, chemin_absolu, hash_fichier)
-            fichiers_hashes.append((chemin_absolu, hash_fichier))
+            absolu_paf = os.path.join(dossier, fichier)
+            hash_file = cal_hash(absolu_paf)
+            save_db(c, absolu_paf, hash_file)
+            files_hash.append((absolu_paf, hash_file))
 
     # Fermeture de la connexion à la base de données
     conn.commit()
     conn.close()
 
-    return fichiers_hashes
+    return files_hash
 
 
-def comparer_hashes(repertoire):
+def comp_hash(repo):
     """Compare les hashs stockés dans la base de données avec les hashs du répertoire"""
-    conn = sqlite3.connect('/home/uzi/Programmation/python/Rootkit Hunter/Rootkit Hunter 3/hashes.db')
+    conn = sqlite3.connect('~/Rootkit Hunter/Hunter.db')
     c = conn.cursor()
 
-    c.execute("SELECT chemin, hash FROM fichiers")
+    c.execute("SELECT path, hash FROM fichiers")
     fichiers_db = c.fetchall()
 
-    fichiers_modifies = []
-    fichiers_supprimes = []
+    modi_files = []
+    delet_files = []
 
-    for chemin, hash_db in fichiers_db:
-        chemin_absolu = os.path.join(repertoire, chemin)
-        hash_repertoire = calculer_hash(chemin_absolu) if os.path.exists(chemin_absolu) else None
-        if hash_repertoire != hash_db:
-            fichiers_modifies.append(chemin_absolu)
-        if not os.path.exists(chemin_absolu):
-            fichiers_supprimes.append(chemin_absolu)
+    for path, hash_db in fichiers_db:
+        absolu_paf = os.path.join(repo, path)
+        hash_repo = cal_hash(absolu_paf) if os.path.exists(absolu_paf) else None
+        if hash_repo != hash_db:
+            modi_files.append(absolu_paf)
+        if not os.path.exists(absolu_paf):
+            delet_files.append(absolu_paf)
 
-    # Fermeture de la connexion à la base de données
     conn.close()
+    return modi_files, delet_files
 
-    return fichiers_modifies, fichiers_supprimes
 
-
-def scanner_ports(ip, debut_port, fin_port):
+def scn_ports(ip, f_port, l_port):
     """Effectue un scan des ports ouverts d'une machine"""
-    ports_ouverts = []
+    op_ports = []
 
-    for port in range(debut_port, fin_port + 1):
+    for port in range(f_port, l_port + 1):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(1)  # Timeout de 1 seconde
+        sock.settimeout(1) 
 
         result = sock.connect_ex((ip, port))
         if result == 0:
-            ports_ouverts.append(port)
+            op_ports.append(port)
 
         sock.close()
 
-    return ports_ouverts
+    return op_ports
 
 
-def comparer_hashes_virustotal(api_key):
+def comp_hash_virustotal(api_key):
     """Compare les hachages stockés dans la base de données avec les hachages sur VirusTotal"""
-    conn = sqlite3.connect('/home/uzi/Programmation/python/Rootkit Hunter/Rootkit Hunter 3/hashes.db')
+    conn = sqlite3.connect('~/Rootkit Hunter/Hunter.db')
     c = conn.cursor()
 
-    c.execute("SELECT chemin, hash FROM fichiers")
+    c.execute("SELECT path, hash FROM fichiers")
     fichiers_db = c.fetchall()
 
     headers = {
         'x-apikey': api_key
     }
 
-    fichiers_suspects = []
+    suspects = []
 
-    for chemin, hash_db in fichiers_db:
+    for path, hash_db in fichiers_db:
         url = f'https://www.virustotal.com/api/v3/files/{hash_db}'
         response = requests.get(url, headers=headers)
 
         if response.status_code == 200:
             json_response = response.json()
             if json_response['data']['attributes']['last_analysis_stats']['malicious'] > 0:
-                fichiers_suspects.append(chemin)
+                suspects.append(path)
 
-    # Fermeture de la connexion à la base de données
     conn.close()
-
-    return fichiers_suspects
+    return suspects
 
 
 def afficher_resultats(titre, liste):
@@ -124,28 +120,28 @@ def afficher_resultats(titre, liste):
         print(element)
 
 
-# Exemple d'utilisation
-repertoire = '/etc/'
-ip_machine = '127.0.0.1'  # Remplacez par l'adresse IP de la machine cible
-debut_port = 1  # Premier port à scanner
-fin_port = 1000  # Dernier port à scanner
-api_key = 'd5eab0faf92362ad3cfb7024336d1c989240f58d909bce2cd2c5d03ecfdc42a4'  # Remplacez par votre clé d'API de VirusTotal
+# Exemple
+repo = '/etc/'
+ip = '127.0.0.1'  # Remplacez par l'adresse IP de la machine cible
+f_port = 1  # Premier port à scanner
+l_port = 1000  # Dernier port à scanner
+api_key = 'd5eab0faf92362ad3cfb7024336d1c989240f58d909bce2cd2c5d03ecfdc42a4'  # Remplacez par votre clé d'API de VirusTotal ou utiliser la mienne :)
 
-with sqlite3.connect('/home/uzi/Programmation/python/Rootkit Hunter/Rootkit Hunter 3/hashes.db') as conn:
+with sqlite3.connect('~/Rootkit Hunter/Hunter.db') as conn:
     c = conn.cursor()
 
-    fichiers_hashes = parcourir_repertoire(repertoire)
+    files_hash = frepo_hash(repo)
 
-    for chemin_absolu, hash_fichier in fichiers_hashes:
-        print("Chemin absolu :", chemin_absolu)
-        print("Hash :", hash_fichier)
+    for absolu_paf, hash_file in files_hash:
+        print("path absolu :", absolu_paf)
+        print("Hash :", hash_file)
         print("-" * 50)
 
-    fichiers_modifies, fichiers_supprimes = comparer_hashes(repertoire)
-    ports_ouverts = scanner_ports(ip_machine, debut_port, fin_port)
-    fichiers_suspects = comparer_hashes_virustotal(api_key)
+    modi_files, delet_files = comp_hash(repo)
+    op_ports = scn_ports(ip, f_port, l_port)
+    suspects = comp_hash_virustotal(api_key)
 
-    afficher_resultats("Fichiers modifiés", fichiers_modifies)
-    afficher_resultats("Fichiers supprimés", fichiers_supprimes)
-    afficher_resultats("Ports ouverts", ports_ouverts)
-    afficher_resultats("Fichiers suspects sur VirusTotal", fichiers_suspects)
+    afficher_resultats("Fichiers modifiés", modi_files)
+    afficher_resultats("Fichiers supprimés", delet_files)
+    afficher_resultats("Ports ouverts", op_ports)
+    afficher_resultats("Fichiers suspects sur VirusTotal", suspects)
