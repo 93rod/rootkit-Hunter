@@ -1,7 +1,7 @@
 Rootkit Hunter (RKH) est un outil puissant conçu pour renforcer la sécurité de votre système en détectant et en supprimant les rootkits, ainsi que d'autres menaces de sécurité. Il offre plusieurs fonctionnalités pour analyser les ports, les fichiers importants spécifiés dans le fichier de configuration, et comparer les empreintes de fichiers à la base de données VirusTotal. Ce fichier README donne un aperçu de RKH et de ses fonctionnalités.
 
 # Installation
-Clonez le dépôt RKH depuis GitHub : git clone [https://github.com/votre_nom_utilisateur/rootkit-hunter.git](https://github.com/93rod/rootkit-Hunter)
+Clonez le dépôt RKH depuis GitHub : git clone https://github.com/93rod/rootkit-Hunter
 Accédez au répertoire RKH : cd rootkit-hunter
 
 # Utilisation
